@@ -1,0 +1,75 @@
+<div id="app">
+  <h1>Figma to Markdown Exporter</h1>
+  <p>Exports selected frames or the entire document to Markdown files.</p>
+  <button id="exportButton">Export All to Markdown</button>
+  <div id="status"></div>
+  <a id="downloadLink" style="display:none;">Download Markdown Files</a>
+</div>
+
+<script>
+  // This runs in the UI iframe
+  const exportButton = document.getElementById('exportButton');
+  const statusDiv = document.getElementById('status');
+  const downloadLink = document.getElementById('downloadLink');
+
+  exportButton.onclick = () => {
+    statusDiv.textContent = 'Exporting... Please wait.';
+    parent.postMessage({ pluginMessage: { type: 'export-markdown' } }, '*');
+  };
+
+  // Listen for messages from the Figma plugin code
+  window.onmessage = async (event) => {
+    const { type, files } = event.data.pluginMessage;
+
+    if (type === 'export-complete') {
+      statusDiv.textContent = 'Export complete! Preparing download...';
+
+      // Create a ZIP file (using JSZip library, or a simpler method for single files)
+      // For simplicity, let's just create a single download link for a dummy file for now.
+      // In a real plugin, you'd use a library like JSZip to create a .zip for multiple files.
+
+      if (Object.keys(files).length > 0) {
+        // For multiple files, you'd need JSZip or similar.
+        // For demonstration, let's just create one for the first file found.
+        const firstFileName = Object.keys(files)[0];
+        const firstFileContent = files[firstFileName];
+
+        // Create a Blob and a download link
+        const blob = new Blob([firstFileContent], { type: 'text/markdown' });
+        const url = URL.createObjectURL(blob);
+
+        downloadLink.href = url;
+        downloadLink.download = firstFileName; // Or a generic zip name like "figma_export.zip"
+        downloadLink.textContent = `Download ${firstFileName}`;
+        downloadLink.style.display = 'block';
+        statusDiv.textContent = 'Export complete!';
+      } else {
+        statusDiv.textContent = 'No content found to export.';
+      }
+    }
+  };
+</script>
+
+<style>
+  body { font-family: sans-serif; padding: 10px; }
+  button {
+    background-color: #1a73e8;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  button:hover { background-color: #145cb1; }
+  #status { margin-top: 10px; font-size: 0.9em; color: #555; }
+  #downloadLink {
+    margin-top: 15px;
+    display: inline-block;
+    padding: 8px 12px;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #333;
+  }
+</style>

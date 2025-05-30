@@ -1,6 +1,15 @@
 // This file runs in the Figma plugin sandbox
 // Ensure your build process defines __html__ (e.g., from a ui.html file).
 // Ensure @figma/plugin-typings are installed and configured in tsconfig.json.
+
+console.log('[code.ts] Plugin code starting.');
+console.log(`[code.ts] typeof __html__: ${typeof __html__}`);
+if (typeof __html__ === 'string') {
+  console.log(`[code.ts] __html__ (first 100 chars): ${__html__.substring(0, 100)}`);
+} else {
+  console.log('[code.ts] __html__ is NOT a string or is undefined.');
+}
+
 figma.showUI(__html__, { width: 300, height: 200, title: 'Export to Markdown' });
 
 // Define an interface for plugin messages for better type safety
@@ -9,12 +18,22 @@ interface PluginMessage {
   [key: string]: any; // Allows for additional properties on messages
 }
 
-// Listen for messages from the UI
-figma.ui.onMessage(async (msg: PluginMessage) => {
+console.log('[code.ts] Logging figma.ui object state just before onmessage check:');
+console.log('[code.ts] typeof figma.ui:', typeof figma.ui);
+if (typeof figma.ui === 'object' && figma.ui !== null) {
+  console.log('[code.ts] typeof figma.ui.onmessage:', typeof figma.ui.onmessage);
+}
+
+// Assign the message handler directly.
+// figma.ui is expected to be an object with an onmessage property after figma.showUI.
+figma.ui.onmessage = async (msg: PluginMessage, props: OnMessageProperties) => {
+  // props argument is now included, even if not immediately used.
+
   if (msg.type === 'export-markdown') {
+    // Notify UI that processing has started
+    figma.ui.postMessage({ type: 'processing-start' });
     const markdownFiles: { [filename: string]: string } = {};
     const imageAssets: { [filename: string]: Uint8Array } = {}; // To store { 'images/filename.png': Uint8Array }
-
     // Helper function for recursive traversal
     async function traverseNode(
       node: SceneNode,
@@ -113,9 +132,11 @@ figma.ui.onMessage(async (msg: PluginMessage) => {
             currentMarkdownForPage.push(`${indent}- [${node.type.toLowerCase()}] \`${node.name}\`\n`);
           }
           // For VECTOR nodes that might be groups of other vectors (e.g., after boolean operations)
-          if (node.type === 'VECTOR' && 'children' in node && node.children.length > 0) {
-             for (const child of node.children) {
-                await traverseNode(child, indentLevel + 1, currentMarkdownForPage, pageNameForAssets);
+          // If a VECTOR node has children, it's acting as a ParentNode.
+          // Use a more specific type assertion to avoid DOM ParentNode conflicts.
+          if (node.type === 'VECTOR' && 'children' in node && (node as SceneNode & { children: ReadonlyArray<SceneNode> }).children.length > 0) {
+             for (const child of (node as SceneNode & { children: ReadonlyArray<SceneNode> }).children) {
+                await traverseNode(child as SceneNode, indentLevel + 1, currentMarkdownForPage, pageNameForAssets);
             }
           }
           break;
@@ -134,6 +155,9 @@ figma.ui.onMessage(async (msg: PluginMessage) => {
         const pageName = page.name.replace(/[^a-zA-Z0-9_.-]/g, '_') || 'Untitled_Page';
         const markdownForThisPage: string[] = []; // Fresh array for each page's content
 
+        // Notify UI about the current page being processed
+        figma.ui.postMessage({ type: 'processing-page', pageName: page.name });
+
         markdownForThisPage.push(`# ${page.name}\n\n`); // Page title
 
         if ('children' in page) {
@@ -148,4 +172,4 @@ figma.ui.onMessage(async (msg: PluginMessage) => {
     // Send the collected markdown content back to the UI
     figma.ui.postMessage({ type: 'export-complete', files: markdownFiles, images: imageAssets });
   }
-});
+};

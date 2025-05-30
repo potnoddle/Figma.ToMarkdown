@@ -1,75 +1,151 @@
-<div id="app">
-  <h1>Figma to Markdown Exporter</h1>
-  <p>Exports selected frames or the entire document to Markdown files.</p>
-  <button id="exportButton">Export All to Markdown</button>
-  <div id="status"></div>
-  <a id="downloadLink" style="display:none;">Download Markdown Files</a>
-</div>
-
-<script>
-  // This runs in the UI iframe
-  const exportButton = document.getElementById('exportButton');
-  const statusDiv = document.getElementById('status');
-  const downloadLink = document.getElementById('downloadLink');
-
-  exportButton.onclick = () => {
-    statusDiv.textContent = 'Exporting... Please wait.';
-    parent.postMessage({ pluginMessage: { type: 'export-markdown' } }, '*');
-  };
-
-  // Listen for messages from the Figma plugin code
-  window.onmessage = async (event) => {
-    const { type, files } = event.data.pluginMessage;
-
-    if (type === 'export-complete') {
-      statusDiv.textContent = 'Export complete! Preparing download...';
-
-      // Create a ZIP file (using JSZip library, or a simpler method for single files)
-      // For simplicity, let's just create a single download link for a dummy file for now.
-      // In a real plugin, you'd use a library like JSZip to create a .zip for multiple files.
-
-      if (Object.keys(files).length > 0) {
-        // For multiple files, you'd need JSZip or similar.
-        // For demonstration, let's just create one for the first file found.
-        const firstFileName = Object.keys(files)[0];
-        const firstFileContent = files[firstFileName];
-
-        // Create a Blob and a download link
-        const blob = new Blob([firstFileContent], { type: 'text/markdown' });
-        const url = URL.createObjectURL(blob);
-
-        downloadLink.href = url;
-        downloadLink.download = firstFileName; // Or a generic zip name like "figma_export.zip"
-        downloadLink.textContent = `Download ${firstFileName}`;
-        downloadLink.style.display = 'block';
-        statusDiv.textContent = 'Export complete!';
-      } else {
-        statusDiv.textContent = 'No content found to export.';
-      }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown Exporter</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 10px;
+      margin: 0;
+      box-sizing: border-box;
     }
-  };
-</script>
+    button {
+      padding: 8px 12px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+    #exportButton {
+      width: 100%;
+      margin-bottom: 15px;
+    }
+    .file-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .file-item:last-child {
+      border-bottom: none;
+    }
+    .file-name {
+      flex-grow: 1;
+      margin-right: 10px;
+      word-break: break-all;
+    }
+    .copy-button {
+      flex-shrink: 0;
+    }
+    #status {
+      margin-top: 10px;
+      font-size: 0.9em;
+      color: green;
+    }
+    #markdownPreviewArea {
+      margin-top: 15px;
+    }
+    #markdownPreviewArea textarea {
+      width: 100%;
+      min-height: 150px; /* Adjust as needed */
+      box-sizing: border-box;
+      font-family: monospace;
+      white-space: pre;
+      overflow-wrap: normal;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <button id="exportButton">Export to Markdown</button>
+  <div id="output"></div>
+  <div id="status"></div>
+  <div id="markdownPreviewArea" style="display: none;">
+    <textarea id="markdownContent" readonly></textarea>
+    <button id="backToListButton">Back to File List</button>
+  </div>
 
-<style>
-  body { font-family: sans-serif; padding: 10px; }
-  button {
-    background-color: #1a73e8;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 10px;
-  }
-  button:hover { background-color: #145cb1; }
-  #status { margin-top: 10px; font-size: 0.9em; color: #555; }
-  #downloadLink {
-    margin-top: 15px;
-    display: inline-block;
-    padding: 8px 12px;
-    background-color: #e0e0e0;
-    border-radius: 4px;
-    text-decoration: none;
-    color: #333;
-  }
-</style>
+  <script>
+    const exportButton = document.getElementById('exportButton');
+    const outputDiv = document.getElementById('output');
+    const statusDiv = document.getElementById('status');
+
+    exportButton.onclick = () => {
+      // Hide preview if it was open
+      document.getElementById('markdownPreviewArea').style.display = 'none';
+      outputDiv.style.display = 'block';
+
+      parent.postMessage({ pluginMessage: { type: 'export-markdown' } }, '*');
+      outputDiv.innerHTML = ''; // Clear previous output
+      statusDiv.textContent = '';
+    };
+
+
+    window.onmessage = (event) => {
+      const pluginMessage = event.data.pluginMessage;
+      if (!pluginMessage) return;
+
+      if (pluginMessage.type === 'processing-start') {
+        outputDiv.innerHTML = 'Starting export...';
+        outputDiv.style.display = 'block';
+        document.getElementById('markdownPreviewArea').style.display = 'none';
+        statusDiv.textContent = '';
+      } else if (pluginMessage.type === 'processing-page') {
+        outputDiv.innerHTML = `Processing page: ${pluginMessage.pageName}...`;
+        outputDiv.style.display = 'block';
+        document.getElementById('markdownPreviewArea').style.display = 'none';
+        statusDiv.textContent = '';
+      } else if (pluginMessage.type === 'export-complete') { // Changed to else if
+        outputDiv.innerHTML = ''; // Clear previous results
+        const files = pluginMessage.files;
+        if (Object.keys(files).length === 0) {
+          outputDiv.innerHTML = 'No content exported.';
+          statusDiv.textContent = ''; // Clear any previous status
+          outputDiv.style.display = 'block';
+          document.getElementById('markdownPreviewArea').style.display = 'none';
+          return;
+        }
+
+        for (const filename in files) {
+          const content = files[filename];
+          const fileItem = document.createElement('div');
+          fileItem.className = 'file-item';
+
+          const fileNameSpan = document.createElement('span');
+          fileNameSpan.className = 'file-name';
+          fileNameSpan.textContent = filename;
+
+          const copyButton = document.createElement('button');
+          copyButton.className = 'copy-button';
+          copyButton.textContent = 'View Markdown'; // Changed button text
+
+          copyButton.onclick = () => {
+            document.getElementById('markdownContent').value = content;
+            outputDiv.style.display = 'none'; // Hide file list
+            document.getElementById('markdownPreviewArea').style.display = 'block'; // Show preview
+            statusDiv.textContent = `Showing content for ${filename}. You can select and copy.`;
+            setTimeout(() => {
+              // Clear status only if still showing this message (user might have clicked another button)
+              if (statusDiv.textContent === `Showing content for ${filename}. You can select and copy.`) statusDiv.textContent = '';
+            }, 4000);
+          };
+
+          fileItem.appendChild(fileNameSpan);
+          fileItem.appendChild(copyButton);
+          outputDiv.appendChild(fileItem);
+        }
+      }
+    };
+
+    const backToListButton = document.getElementById('backToListButton');
+    const markdownPreviewArea = document.getElementById('markdownPreviewArea');
+
+    backToListButton.onclick = () => {
+      markdownPreviewArea.style.display = 'none';
+      outputDiv.style.display = 'block';
+      statusDiv.textContent = '';
+    }
+  </script>
+</body>
+</html>

@@ -2,13 +2,12 @@
   "name": "Figma to Markdown Exporter",
   "id": "1234567890123456789",
   "api": "1.0.0",
-  "main": "code.js",
+  "main": "dist/code.js",
   "ui": "ui.html",
   "editorType": ["figma"],
-  "capabilities": ["text", "image", "vector", "frame"],
   "networkAccess": {
     "allowedDomains": [
-        "*"
+      "none"
     ]
   }
 }

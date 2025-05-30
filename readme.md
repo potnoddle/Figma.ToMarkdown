@@ -56,7 +56,7 @@ This plugin is currently intended for local development and testing.
 
     -   Save the plugin files to a location on your computer.
 
-6.  **Replace Generated Files:** Copy the `manifest.json`, `code.ts` (or `code.js`), `ui.html`, and any other relevant files from this repository into the folder Figma created for your new plugin, overwriting the existing ones.
+6.  **Replace Generated Files:** Copy the `manifest.json`, the compiled `code.js` (after running `npm run build`), and `ui.html` from this repository into the folder Figma created for your new plugin, overwriting the existing template files.
 
 7.  **Run the Plugin:**
 
@@ -75,7 +75,7 @@ This plugin is currently intended for local development and testing.
 
 3.  **Click "Export All to Markdown":** A simple plugin UI will appear. Click the button to start the export process.
 
-4.  **Download Files:** Once the export is complete, a download link will appear in the plugin UI. Click it to download a `.md` file (or a `.zip` if `JSZip` is integrated for multiple files).
+4.  **Download ZIP File:** Once the export is complete, a download link will appear in the plugin UI. Click it to download a `.zip` file containing all your Markdown files and an `images` folder with the exported assets.
 
 🛠️ Development
 ---------------
@@ -84,7 +84,7 @@ This plugin is currently intended for local development and testing.
 
 -   `manifest.json`: Plugin metadata and entry points.
 
--   `code.ts` (or `code.js`): The core logic interacting with the Figma API.
+-   `code.ts`: The core plugin logic written in TypeScript, interacting with the Figma API. This is compiled to `code.js`.
 
 -   `ui.html`: The HTML structure for the plugin's user interface.
 
@@ -113,8 +113,6 @@ This plugin is currently intended for local development and testing.
 
 -   **Configurable Output:** Add options for Markdown formatting (e.g., different heading levels for frames vs. groups).
 
--   **Image Export:** Export images (PNG/JPG) referenced in Figma and link them in Markdown.
-
 -   **LLM Integration (Advanced):**
 
     -   Integrate with an external Large Language Model (LLM) API (e.g., Gemini API, OpenAI API) to analyze the extracted text and generate acceptance criteria, user stories, or other documentation.
@@ -134,13 +132,16 @@ This plugin is currently intended for local development and testing.
 
 -   **Figma Plugin API**
 
--   **JavaScript / TypeScript**
+-   **TypeScript** (for plugin logic)
+
+-   **JavaScript** (for UI logic)
 
 -   **HTML & CSS**
 
 -   **Node.js** (for local development and `npm`)
 
 -   **JSZip** (for creating ZIP archives for download)
+-   **ESLint, Prettier, TypeScript** (for development workflow)
 
 📄 License
 ----------

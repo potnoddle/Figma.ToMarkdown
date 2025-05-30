@@ -39,6 +39,7 @@ figma.ui.onMessage(async (msg: PluginMessage) => {
               const imageBytes = await node.exportAsync({ format: 'PNG' });
               const imageFileName = `images/${pageNameForAssets}_${nodeNameSafe}_${node.id}.png`;
               imageAssets[imageFileName] = imageBytes;
+              // Correct Markdown image link: !Alt Text
               currentMarkdownForPage.push(`${indent}!${node.name || node.type}\n\n`);
               hasExportedImageFill = true;
               break; // Export only the first visible image fill for this node

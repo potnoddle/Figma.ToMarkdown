@@ -1,6 +1,6 @@
 {
   "name": "Figma to Markdown Exporter",
-  "id": "YOUR_PLUGIN_ID",
+  "id": "1234567890123456789", // Replace with your actual plugin ID from Figma or a unique dev ID
   "api": "1.0.0",
   "main": "code.js",
   "ui": "ui.html",

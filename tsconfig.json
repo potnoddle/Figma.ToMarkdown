@@ -15,5 +15,7 @@
       "./node_modules/@figma"
     ]
   },
-  "include": ["code.ts"]                   /* Specifies a list of files to be included in compilation. */
+  "files": [                          /* Specifies a list of files to be compiled. Takes precedence over include/exclude for these files. */
+    "code.ts"
+  ]
 }

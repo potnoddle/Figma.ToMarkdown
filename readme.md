@@ -8,13 +8,17 @@ A Figma plugin designed to help designers and developers extract structured cont
 
 -   **Hierarchical Export:** Converts Figma pages, frames, groups, and text layers into a structured Markdown format.
 
--   **Multi-file Output:** Generates a separate Markdown file for each top-level page in your Figma document.
-
 -   **Text Content Extraction:** Extracts and formats text from text layers.
 
 -   **Basic Node Recognition:** Identifies and notes the presence of components, instances, and basic shapes.
 
+-   **Image Export:** Exports images (PNGs) found within nodes (e.g., as fills) and links them correctly in the Markdown.
+
+-   **Multi-file Output & Packaging:** Generates a separate Markdown file for each top-level page and packages all Markdown files along with their associated images into a single downloadable ZIP archive.
+
 -   **User-Friendly UI:** A simple interface to initiate the export process.
+
+-   **Developer Tooling:** Includes TypeScript, ESLint, and Prettier for a robust development experience.
 
 🚀 How to Install
 -----------------
@@ -23,7 +27,7 @@ This plugin is currently intended for local development and testing.
 
 1.  **Download the Figma Desktop App:** Plugin development requires the Figma desktop application.
 
-2.  **Clone or Download this Repository:**
+2.  **Clone or Download this Repository:** Get the project files onto your local machine.
 
     ```
     git clone https://github.com/your-username/figma-to-markdown-exporter.git

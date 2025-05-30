@@ -1,0 +1,36 @@
+{
+  "name": "figma-to-markdown-exporter",
+  "version": "1.0.0",
+  "description": "Figma plugin to export content to Markdown.",
+  "main": "code.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "npm-watch build",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "format": "prettier --write \"**/*.{ts,html,json,md}\"",
+    "validate": "npm run lint && npm run build"
+  },
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.88.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "npm-watch": "^0.11.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.3.3"
+  },
+  "watch": {
+    "build": {
+      "patterns": [
+        "code.ts"
+      ],
+      "extensions": "ts",
+      "quiet": false
+    }
+  }
+}
